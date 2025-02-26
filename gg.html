@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Chatbot</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+
+        .chat-header {
+            background-color: #4a76a8;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-bubble {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-bubble {
+            align-self: flex-end;
+            background-color: #4a76a8;
+            color: white;
+        }
+
+        .bot-bubble {
+            align-self: flex-start;
+            background-color: #e1eaf5;
+            color: #333;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background-color: #ffffff;
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        #send-btn {
+            padding: 10px 15px;
+            margin-left: 10px;
+            background-color: #4a76a8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        #send-btn:hover {
+            background-color: #3e6487;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">Medical Chatbot</div>
+        <div class="chat-box" id="chat-box"></div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Ask a question..." autocomplete="off">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const message = userInput.value.trim();
+            if (message === '') return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+            userInput.value = '';
+
+            // Fetch bot response
+            fetch('/ask', {  // Replace with full URL if needed
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                addMessage(data.response, 'bot');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                addMessage("I'm having trouble connecting to the server.", 'bot');
+            });
+        }
+
+        // Function to add message bubbles to the chat
+        function addMessage(text, sender) {
+            const chatBox = document.getElementById('chat-box');
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble ' + (sender === 'user' ? 'user-bubble' : 'bot-bubble');
+            bubble.textContent = text;
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to latest message
+        }
+    </script>
+</body>
+</html>
